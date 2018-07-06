@@ -1,0 +1,211 @@
+\documentclass[a4paper,man,natbib]{apa6}
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+
+\title{Unsupervised ranking of person name entities based on reputation.}
+\shorttitle{Unsupervised ranking}
+\author{Haimonti Dutta$^{1}$, Aayushee Gupta$^{2}$, Jayashree Chandrasekharan$^{3}$}
+\affiliation{$^{1}$Department of Management Science and Systems, \\
+University at Buffalo, Buffalo, NY, 14221. \\
+$^{2}$Department of Computer Science, IIIT Bangalore, Karnataka, India. \\
+$^{3}$Department of Computer Science, University at Buffalo, Buffalo, NY, 14221. \\
+Email: haimonti@buffalo.edu; aayushee1230@iiitd.ac.in; jchandra@buffalo.edu }
+
+
+\abstract{Text databases containing newspaper articles, reports, logs, proceedings, and books have grown tremendously in number, size and volume over the last few decades. They are often stored using large-scale infrastructure (such as parallel and distributed repositories, data clouds) and web interfaces allow access to individual documents in the repository. However, methods for automatic content extraction from text and using them to understand the collections are still lacking in number and scope. In this paper, we address one such problem, namely the task of finding \emph{reputed} people from text repositories. Our goal is to automatically populate a list of person name entities sorted by reputation. For our purposes, a person's reputation depends on several factors including the number of times s/he has been discussed in the text, in what context and relevant details from the narrative.We first design a \textit{gazetteer} to keep track of people names using named entity recognition and coreference resolution of text documents. This is followed by extraction of features to characterize reputation and ranking them using a novel unsupervised rank aggregation scheme. The top-K entries of the ranked lists are evaluated manually by human annotators to assess the relevance of the findings. %The ranked list(s) generated from this study are incorporated into timelines representing important events in a country's history.
+Empirical results are presented using two newspaper corpora one comprising of 14020 articles from a historical newspaper, ``The Sun", published from New York in 1896 and another contemporary newspaper ``The Washington Post".}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+\label{sec:introduction}
+Large scale text repositories storing books, newspaper articles, reports and proceedings have now been in existence for many decades. 
+%Historical newspaper archives, for example, have typically grown incrementally first by digitizing a small number of newspapers relevant to a regions history, geographic coverage, and events of a particular time period and subsequently digitizing more papers in phased development. 
+They are capable of providing a wealth of information to scholars. The keyword-based retrieval systems designed for these repositories allow access to individual documents, but may often exhibit poor retrieval performance for a variety of reasons such as noisy and garbled\footnote{Optical Character Recognition (OCR) technology used for digitization is imperfect and generates a lot of garbled text.} text, incongruity in language and choice of keywords. The problems with the retrieval systems often contribute to a lack of understanding of the corpora as a whole and may even hinder development of systems for automatic content extraction. 
+%Digitization of old newspapers helps to develop a searchable database of newspaper articles which greatly enhances accessibility of such information \cite{yang2011topic}.
+%%They
+%are of particular interest to genealogists, historians and scholars for \textit{people search} -- the process of finding information about a person and reconnecting them with others they are likely to know. The goal is often to determine who knows whom and how.
+
+This paper addresses one such problem -- that of extraction of names of \emph{reputed} people from text corpora by examining the context in which person names occur, the number of times they appear in the documents and with what frequency, and other features from the text. Such an exercise can help to learn about influential people in the context of a country's timeline of events. They can also aid the process of people search \cite{BilenkoMCRF03,Friedman_92} by finding information about a person. 
+
+While the problem of reputed person detection has been studied extensively in the field of social networks and marketing, our problem is different due to the following characteristics:
+\begin{enumerate}
+\item Text repositories are not hyperlinked and lack explicit citation structure; this makes the problem at hand fundamentally different from finding influence in citation graphs. 
+\item The notion of \emph{reputation} of a person name entity has to be operationalized based on the content and structure of the documents.
+\item  The automatically generated ranked lists of reputed people have to be evaluated by human annotators since ground truth is unavailable for the task.  
+\end{enumerate}
+
+The premise of this research is that it is possible to extract person name entities from text repositories; each individual reference to the entity must be identified in the corpus and linked together. Entity profiles are then created which contain information pertaining to statistical properties of documents in which the name occurs. This provides a mechanism to rank them using rank aggregation techniques and evaluate the results manually by experts. Following this premise, a \emph{people gazetteer} is generated from noisy OCR text. This organized dictionary of people names is extracted using named entity recognition and coreference resolution of spell corrected text. Following this, entity profiles are generated based on the number of times s/he has been discussed in news, in what topics and other relevant details from the narrative.These profiles are ranked to determine the reputation of these entities. 
+
+%For all of the above use cases, the primary goal is automatic extraction of , since newspapers are scanned by the use of Optical Character Recognition (OCR) technology and this generates a lot of garbled text. Furthermore, particular entity across a set of documents. 
+
+
+
+%The goal is to determine who knows whom and how. This may be achieved by studying biography. However, biographies may be largely untraceable for historical groups. In such cases, secondary information (personal testimonies, newspaper articles, etc.) is studied. This process is called \textit{prosopography}
+%%Identification of this group of individuals and studying stories of their lives is an important tool in \textit{prosopography}. 
+%%In such cases, the common characteristics of a historical group may be learnt by analyses of statistically relevant quantities of biographical data about a well-defined group of individuals.  
+%and can be used to learn about social structure, professional and occupational groups or economic classes. %
+%Quoting prosopographer Katharine Keats-Rohan, 
+%\begin{quote}
+%...prosopography is about what the analysis of the sum of data about many individuals can tell us about the different types of connection between them, and hence about how they operated within and upon the institutions -- social, political, legal, economic, intellectual -- of their time.
+%\end{quote}
+
+% The nature of prosopographical research has evolved over time. Lawrence Stone\cite{stone_71} discusses an ``older" form of prosopography which was principally concerned with well-known social elites, many of whom were influential people. Their genealogies were well-researched, and social webs and kinship linking could be traced, allowing a prosopography of a ``power elite" to emerge. This older prosopography can be contrasted with a newer form called \emph{quantitative prosopography}, which studied much wider populations including ``ordinary people". %The people gazetteer discussed in this paper primarily deals with quantitative prosopography.
+
+%\noindent In this paper, we present a framework to find reputed people from noisy OCR text. develop a \textit{people gazetteer} which forms the basis of prosopographical research. The gazetteer is built from the text of historical newspapers subjected to Optical Character Recognition (OCR) and is capable of identifying reputed people. Our paper has the following novel contributions: (1) \textbf{Development of the People Gazetteer} -- an organized dictionary of people names is extracted using Named Entity Recognition and Coreference Resolution. (2) \textbf{Ranking of Person Name Entities}: we study two rank aggregation schemes -- Borda and median-based rank aggregation to obtain ranked lists of person name entities. 
+%
+%To the best of our knowledge, the development of such a framework for doing prosopographical research using machine learning has not been studied before. This exercise, however, opens up a wide range of possibilities -- for example, 
+%%news articles related to the influential person can also be linked to a Wikipedia page entry to find out relevant details or 
+%to build influential people networks that can learn about entities involved in historical events. Such applications can immensely help historians working on prosopography\cite{allen2013toward} and scholars in learning events related to historically significant people interactively.
+
+\noindent \textbf{Paper Organization:} This paper is organized as follows: Section~\ref{influential:rw} discusses related work; the machine learning framework is discussed in Section~\ref{chp:framework}; the characteristics of the data used for this research are presented in Section~\ref{data}. Sections~\ref{chapter:people gazetteer} and ~\ref{influential} present the development of the gazetteer and the influential people detection process; empirical results and discussions are presented in Section~\ref{influential:results} and ~\ref{influential:discussion} and Section~\ref{conc} concludes the paper.
+
+\section{Who is a reputed person?}
+[REDO THIS SECTION]
+In the context of machine learning, influential people detection has been mostly done in the field of social networks, marketing and diffusion research.
+Kempe et. al \cite{kempe2003maximizing} present work on choosing the most influential set of nodes in a social network in order to maximize user influence in the network. 
+%They consider spread of influence from an influential node cascading through a network which further influences other neighborhood nodes. In this research, we do not focus on the network formed by person entities.
+Lerman et. al \cite{lerman2010using} define popularity of a news story in terms of number of reader votes received by it. Popularity over time is based on voting history and the probability that a user in a list will vote. To identify influential bloggers, Agarwal et. al\cite{agarwal2008identifying} quantify influence of each blogger by taking the maximum of the influence scores of each blog posted by the blogger. The influence score is calculated using the number of posts that refer to the blog, number of comments on the blog, number of other posts that the blog refers to and length of the blog. Influential blogger categories are also created based on the temporal patterns of blog posting. Cha et. al\cite{cha2010measuring} describe another set of measures for detection of top influential users on Twitter using number of retweets, mentions and followers for an individual. They perform ranking based on each measure separately and use Spearman's rank correlation coefficient to find correlation among ranks and effect of each measure contributing to a person's influence. The influence ranks of topmost influential users on Twitter are presented across various topics as well as time. In all of the above, the goal is to measure influence or popularity -- however, these cannot be directly adapted to the gazetteer or newspaper articles. 
+\section{Related Work}
+
+\subsection{Extraction of reputed people names from text documents}
+\subsection{Ranking of named entities}
+- Discuss supervised and unsupervised ranking methods \\
+- Talk about Rank Aggregation schemes \\
+
+
+
+\section{Knowledge Discovery Process for Unsupervised Ranking of Person Name Entities}
+
+\subsection{People Gazetteer}
+People Gazetteer as defined in Section~\ref{sec:introduction} consists of tuples of person names along with list of documents in which they occur. The primary goal of developing the gazetteer is to have an organized list of person names from which influential people can be identified.
+%It is developed as an organized structure that can facilitate the process of detection of influential persons from the dataset in an efficient and easy way. 
+This section describes the two-step process involved in the construction of the People Gazetteer:
+a) Extraction of person names from the news articles using Named Entity Recognition (described further in Section~\ref{ner}) and
+b) Assignment of topics to news articles using a Latent Dirichlet Allocation (LDA)-based topic detector (described further in  Section~\ref{topic detection}). The following modifications are made on the output of the Stanford CRF-NER -- if the software recognizes single term person entities, we ignore those and consider only multi-term person entities and if a person entity's name is repeated multiple times, then we consider it only once. For example, if the person names ``John", ``John Smith", ``Smith" are recognized during PNER process, then we only consider ``John Smith" as as a potential person entity for our People Gazetteer.  
+A total of 36364 person entities are extracted from our corpus of 14020 news articles.  
+
+%Output of People gazetteer developed using these steps is presented in Section ~\ref{gaz:result}.
+
+\subsection{Person Named Entity Recognition (PNER)}
+\label{ner}
+
+%\subsubsection{Definition}
+\noindent Named Entity Recognition (NER) refers to classification of elements in text into pre-defined categories such as the names of persons, organizations, locations, expressions of times, quantities, monetary values, and percentages. 
+%It can also be considered as a sequence labeling problem that predicts label of each element of the text  based on the adjacent element labels.
+Person Named Entity Recognition (PNER) is Named Entity Recognition that marks up only person names occurring in the text. It involves \emph{chunking} or segmentation of  the text for name detection followed by \emph{classification} of the name by entity type ( for e.g. person, organization, and location).
+
+%PNER is required in this research so as to extract all person name entities occurring in the complete dataset and then identify influential person entities among them through development of the People Gazetteer. 
+%PNER aids in the development of People Gazetteer by first extracting a list of all person names occurring in the dataset followed by creation of a Person-Article list where each person is linked with the articles in which he/she occurs.
+
+In this work, the Stanford CRF-NER\footnote{http://nlp.stanford.edu/software/CRF-NER.shtml} is used for Person Named Entity Recognition. It identifies three classes -- Person, Organization and Location and is based on linear chain Conditional Random Field (CRF)(\cite{mccallum2003early, finkel2005incorporating, sutton2011introduction}) sequence models. 
+
+\subsection{Feature Engineering} 
+To find \emph{reputed} people from the text in news articles, we extract several features corresponding to each person entity in the gazetteer. These are:
+
+%\begin{enumerate}
+%\item 
+\noindent \textbf{Normalized Document Length (NDL): } 
+Document Length is defined as the number of tokens contained in a news article. It is further normalized by dividing with the maximum length of any news article across the corpus. Thus,  
+$NDL= \frac{\text{Document Length}} {\text{Maximum Document Length in the dataset}}$
+
+%\item[$\bullet$IDF]
+%IDF is used as a parameter in the calculation of DI of a news article to give weight to the person entity's occurrence in the complete %dataset. It can be calculated as the number of news articles in which a person entity occurs in the complete dataset. It is %equivalent to the length of document list in the people gazetteer for each person entity.
+
+%\item
+\noindent \textbf{ Normalized Person Name Frequency (NPNF): }
+Person Name Frequency (PNF) accounts for the number of occurrences of a person's name in the news article. A high value of PNF makes the document more important. It is normalized as follows:
+
+\begin{center}
+$NPNF=	1+\log$(PNF)
+\end{center}
+
+\noindent \textbf{Number of similar articles (NSIM): }
+This parameter is used in the calculation of the DI by finding articles belonging to the same topic. 
+%The set of topics derived from a corpus can be used to answer questions about the similarity of words and 
+%documents.
+For a document $d$ whose DI is to be calculated, let  SIM= Number of articles with the same topic as $d$ in the document list of a person.
+This measure is normalized by the total number of articles in the document list of the person. Formally,
+
+%\begin{center}
+$NSIM= \frac{\text{SIM}} {\text{Total number of articles in the person's document list}}$
+%\end{center}
+NSIM is equivalent to the proportion of topic similar articles that document $d$ has.
+%This parameter takes into account the effect of a document's score on a person's IPI when there exist several other documents of the same topic in the person's list. 
+%\end{enumerate}
+
+\noindent \textbf{Signature Features: }
+
+
+\noindent \textbf{Contextual Features: } The entire text in the document is used to extract features. Word2Vec representation \cite{Mikolov_13} of the text is obtained using the deeplearning4j framework (\url{https://deeplearning4j.org/word2vec}) -- the input to the word2vec two layer neural net is the text in the document and the output is a 100 dimensional representation of words; these vectors, called \emph{neural word embeddings}, are obtained using a continuous bag of word representation (CBOW). 
+
+
+\subsection{Human Annotation}
+
+\subsection{Ranking Models}
+ Kernel Density Estimation  \\
+ Borda Ranking \\
+
+\subsection{Evaluation of Models}
+
+
+\subsection{Data Description}
+Two data sets are used to provide empirical validation of the claim that unsupervised ranking schemes can be used for finding reputed people. These are as follows:
+
+\begin{enumerate}
+\item Historical Newspaper Archive: Historical newspapers are obtained from Chronicling America\footnote{\texttt{http://chroniclingamerica.loc.gov/}}. Under this program, institutions such as libraries receive an award to select and digitize approximately 100,000 newspaper pages representing that state's regional history, geographic coverage, and events of the particular time period being covered. The scanned newspaper holdings of the New York Public Library are a source of prosopographical studies. The newspapers are scanned on a page-by-page basis and article level
+segmentation is poor or non-existent; the OCR scanning process is far
+from perfect and the documents generated from it contain a large
+amount of garbled text. Article level segmentation of text is available for only two months -- since this requires human intervention. Articles of ``The Sun" newspaper from November-December 1894 consisting of 14020 news articles are used in our study. 
+
+\textbf{Pre-processing: } The garbled OCR text makes data preprocessing mandatory before application of any text mining algorithms. We,therefore, use edit distance algorithm based on Levenshtein distance to perform spelling correction on the OCR text articles. The algorithm is chosen because of its speed and ability to correct OCR errors compared to the n-gram approach \cite{chattopadhyaya2013fast}. Our edit distance algorithm also uses an enhanced person names dictionary for look up to give significance to personal names spelling correction in the dataset. The results of spelling correction and data preprocessing are presented in \cite{Gupta_14a}.
+
+
+\item Contemporary Newspaper Archive: [DESCRIBE THE WASHINGTON POST DATA]
+\end{enumerate}
+
+%\subsection{Pre-processing}
+
+
+
+\section{Empirical Results}
+
+\section{Discussions}
+
+\section{Conclusion}
+
+\section{Acknowledgements}
+%\subsection{Comments}
+%
+%You can add inline TODO comments with the todonotes package, like this:
+%\todo[inline, color=green!40]{This is an inline comment.}
+%
+%\subsection{References}
+%
+%LaTeX automatically generates a bibliography in the APA style from your .bib file. The citep command generates a formatted citation in parentheses \citep{Lamport1986}. The cite command generates one without parentheses. LaTeX was first discovered by \cite{Lamport1986}.
+
+
+
+% Commands to include a figure:
+%\begin{figure}
+%\centering
+%\includegraphics[width=0.5\textwidth]{frog.jpg}
+%\caption{\label{fig:frog}This is a figure caption.}
+%\end{figure}
+
+
+\bibliography{example}
+
+\end{document}
+
+%
+% Please see the package documentation for more information
+% on the APA6 document class:
+%
+% http://www.ctan.org/pkg/apa6
+%
