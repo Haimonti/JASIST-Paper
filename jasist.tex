@@ -106,6 +106,7 @@ Person Named Entity Recognition (PNER) is Named Entity Recognition that marks up
 In this work, the Stanford CRF-NER\footnote{http://nlp.stanford.edu/software/CRF-NER.shtml} is used for Person Named Entity Recognition. It identifies three classes -- Person, Organization and Location and is based on linear chain Conditional Random Field (CRF)(\cite{mccallum2003early, finkel2005incorporating, sutton2011introduction}) sequence models. 
 
 \subsection{Feature Engineering} 
+\label{feat}
 To find \emph{reputed} people from the text in news articles, we extract several features corresponding to each person entity in the gazetteer. These are:
 
 %\begin{enumerate}
@@ -146,11 +147,26 @@ NSIM is equivalent to the proportion of topic similar articles that document $d$
 
 
 \subsection{Human Annotation}
+Each 
 
 \subsection{Ranking Models}
- Kernel Density Estimation  \\
- Borda Ranking \\
+The objective is to rank the set of all person names in the corpus based on reputation. Towards this end, a set of features denoted by $f_1,f_2, \cdots, f_n$ is extracted which provides the basis for ranking. Two different unsupervised ranking models are used in this work. These are described below:
+\begin{itemize}
+\item \textbf{Kernel Density Estimation (KDE) based Ranking: } In this method, we assume that the most reputed person can be found by looking for peaks in a simple probabilistic model of the documents. The probability of a person being reputed is modeled as $P(P_j = reputed) = P(f_1,f_2 \cdots, f_n)$. We learn the probabilities of our model by estimating the non-parametric densities of all features we measure from the corpus (described in Section~\ref{feat}). Specifically, let $X \subseteq R^n$ be the domain of interest with $n$-features and $f: X \rightarrow R_{\ge 0}$ be an unknown probability density function. Let $D \subseteq X$ be a set of samples drawn from $f$. For any $x \in X$ we estimate $f(x)$ by using the function:
+\begin{equation}
+\label{eqn1}
+\hat{f}_D(x) = \frac{1}{|D|} \sum_{s \in D} \prod_{i=1}^{n} \frac{1}{h_i} K(\frac{x_i - s_i}{h_i})
+\end{equation}
+where $x_i$ and $s_i$ are the $i^{th}$ components of $x$ and $s$ respectively and $h_i$ is the $i^{th}$ component of the bandwidth vector $h$. $K$ is the kernel function and the kernel function chosen in this work is the Gaussian kernel. The choice of the bandwidth vector $h$ is critical. Of the several known choices, the normal plug-in method is used here:
+\begin{equation}
+\label{eqn2}
+h_i = (\frac{4}{|D| (n+2)})^{\frac{1}{n+4} \hat{\sigma_i}}
+\end{equation}
+where $ \hat{\sigma_i}$ is the sample standard deviation computed from the $i^{th}$ column of $|D|$.
 
+Finally, the rank of a person based on reputation, is inversely proportional to the probability of being reputed computed using the KDE based ranking.  
+ \item \textbf{Borda Ranking: } 
+\end{itemize}
 \subsection{Evaluation of Models}
 
 
@@ -180,6 +196,7 @@ amount of garbled text. Article level segmentation of text is available for only
 \section{Conclusion}
 
 \section{Acknowledgements}
+The authors would like to thank Arpit Rana with help with annotations.
 %\subsection{Comments}
 %
 %You can add inline TODO comments with the todonotes package, like this:
