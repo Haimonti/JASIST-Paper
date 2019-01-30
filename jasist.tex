@@ -73,11 +73,9 @@ Kempe et. al \cite{kempe2003maximizing} present work on choosing the most influe
 Lerman et. al \cite{lerman2010using} define popularity of a news story in terms of number of reader votes received by it. Popularity over time is based on voting history and the probability that a user in a list will vote. To identify influential bloggers, Agarwal et. al\cite{agarwal2008identifying} quantify influence of each blogger by taking the maximum of the influence scores of each blog posted by the blogger. The influence score is calculated using the number of posts that refer to the blog, number of comments on the blog, number of other posts that the blog refers to and length of the blog. Influential blogger categories are also created based on the temporal patterns of blog posting. Cha et. al\cite{cha2010measuring} describe another set of measures for detection of top influential users on Twitter using number of retweets, mentions and followers for an individual. They perform ranking based on each measure separately and use Spearman's rank correlation coefficient to find correlation among ranks and effect of each measure contributing to a person's influence. The influence ranks of topmost influential users on Twitter are presented across various topics as well as time. In all of the above, the goal is to measure influence or popularity -- however, these cannot be directly adapted to the gazetteer or newspaper articles. 
 \section{Related Work}
 
-\subsection{Extraction of reputed people names from text documents}
-\subsection{Ranking of named entities}
-- Discuss supervised and unsupervised ranking methods \\
-- Talk about Rank Aggregation schemes \\
+\input{repNames.tex}
 
+\input{relatedRanking.tex}
 
 
 \section{Knowledge Discovery Process for Unsupervised Ranking of Person Name Entities}
@@ -140,10 +138,10 @@ NSIM is equivalent to the proportion of topic similar articles that document $d$
 %This parameter takes into account the effect of a document's score on a person's IPI when there exist several other documents of the same topic in the person's list. 
 %\end{enumerate}
 
-\noindent \textbf{Signature Features: }
+\noindent \textbf{Signature Features: } %% Jayashree Please Update This Section
 
 
-\noindent \textbf{Contextual Features: } The entire text in the document is used to extract features. Word2Vec representation \cite{Mikolov_13} of the text is obtained using the deeplearning4j framework (\url{https://deeplearning4j.org/word2vec}) -- the input to the word2vec two layer neural net is the text in the document and the output is a 100 dimensional representation of words; these vectors, called \emph{neural word embeddings}, are obtained using a continuous bag of word representation (CBOW). 
+\noindent \textbf{Contextual Features: } The entire text in the document is used to extract features. Word2Vec representation \cite{Mikolov_13a, Mikolov_13b} of the text is obtained using the deeplearning4j framework (\url{https://deeplearning4j.org/word2vec}) -- the input to the word2vec two layer neural net is the text in the document and the output is a 100 dimensional representation of words; these vectors, called \emph{neural word embeddings}, are obtained using a continuous bag of word representation (CBOW). 
 
 
 \subsection{Human Annotation}
@@ -152,7 +150,7 @@ Each
 \subsection{Ranking Models}
 The objective is to rank the set of all person names in the corpus based on reputation. Towards this end, a set of features denoted by $f_1,f_2, \cdots, f_n$ is extracted which provides the basis for ranking. Two different unsupervised ranking models are used in this work. These are described below:
 \begin{itemize}
-\item \textbf{Kernel Density Estimation (KDE) based Ranking: } In this method, we assume that the most reputed person can be found by looking for peaks in a simple probabilistic model of the documents. The probability of a person being reputed is modeled as $P(P_j = reputed) = P(f_1,f_2 \cdots, f_n)$. We learn the probabilities of our model by estimating the non-parametric densities of all features we measure from the corpus (described in Section~\ref{feat}). Specifically, let $X \subseteq R^n$ be the domain of interest with $n$-features and $f: X \rightarrow R_{\ge 0}$ be an unknown probability density function. Let $D \subseteq X$ be a set of samples drawn from $f$. For any $x \in X$ we estimate $f(x)$ by using the function:
+\item \textbf{Kernel Density Estimation (KDE) based Ranking: } In this method, we assume that the most reputed person can be found by looking for peaks in a simple probabilistic model of the documents. The probability of a person being reputed is modeled as $P(P_j = reputed) = P(f_1,f_2 \cdots, f_n)$. We learn the probabilities of our model by estimating the non-parametric densities \cite{scott_multivariate_2015, Silverman86} of all features we measure from the corpus (described in Section~\ref{feat}). Specifically, let $X \subseteq R^n$ be the domain of interest with $n$-features and $f: X \rightarrow R_{\ge 0}$ be an unknown probability density function. Let $D \subseteq X$ be a set of samples drawn from $f$. For any $x \in X$ we estimate $f(x)$ by using the function:
 \begin{equation}
 \label{eqn1}
 \hat{f}_D(x) = \frac{1}{|D|} \sum_{s \in D} \prod_{i=1}^{n} \frac{1}{h_i} K(\frac{x_i - s_i}{h_i})
@@ -216,7 +214,7 @@ The authors would like to thank Arpit Rana with help with annotations.
 %\end{figure}
 
 
-\bibliography{example}
+\bibliography{jasist}
 
 \end{document}
 
