@@ -1,19 +1,22 @@
 \documentclass[a4paper,man,natbib]{apa6}
 
+
 \usepackage[english]{babel}
 \usepackage[utf8x]{inputenc}
 \usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage[colorinlistoftodos]{todonotes}
+%\usepackage{float}
 
-\title{Unsupervised ranking of person name entities based on reputation.}
-\shorttitle{Unsupervised ranking}
+\usepackage[colorinlistoftodos]{todonotes}
+%Unsupervised ranking of person name entities based on reputation.
+\title{A Reputation System for Person Name Entities Using Unsupervised Ranking}
+\shorttitle{Reputation System}
 \author{Haimonti Dutta$^{1}$, Aayushee Gupta$^{2}$, Jayashree Chandrasekharan$^{3}$}
 \affiliation{$^{1}$Department of Management Science and Systems, \\
 University at Buffalo, Buffalo, NY, 14221. \\
 $^{2}$Department of Computer Science, IIIT Bangalore, Karnataka, India. \\
 $^{3}$Department of Computer Science, University at Buffalo, Buffalo, NY, 14221. \\
-Email: haimonti@buffalo.edu; aayushee1230@iiitd.ac.in; jchandra@buffalo.edu }
+Email: \{haimonti,jchandra\}@buffalo.edu; aayushee1230@iiitd.ac.in}
 
 
 \abstract{Text databases containing newspaper articles, reports, logs, proceedings, and books have grown tremendously in number, size and volume over the last few decades. They are often stored using large-scale infrastructure (such as parallel and distributed repositories, data clouds) and web interfaces allow access to individual documents in the repository. However, methods for automatic content extraction from text and using them to understand the collections are still lacking in number and scope. In this paper, we address one such problem, namely the task of finding \emph{reputed} people from text repositories. Our goal is to automatically populate a list of person name entities sorted by reputation. For our purposes, a person's reputation depends on several factors including the number of times s/he has been discussed in the text, in what context and relevant details from the narrative.We first design a \textit{gazetteer} to keep track of people names using named entity recognition and coreference resolution of text documents. This is followed by extraction of features to characterize reputation and ranking them using a novel unsupervised rank aggregation scheme. The top-K entries of the ranked lists are evaluated manually by human annotators to assess the relevance of the findings. %The ranked list(s) generated from this study are incorporated into timelines representing important events in a country's history.
@@ -21,7 +24,8 @@ Empirical results are presented using two newspaper corpora one comprising of 14
 
 \begin{document}
 \maketitle
-
+\setcounter{secnumdepth}{4}
+%\chapter{Introduction}
 \section{Introduction}
 \label{sec:introduction}
 Large scale text repositories storing books, newspaper articles, reports and proceedings have now been in existence for many decades. 
@@ -63,72 +67,88 @@ The premise of this research is that it is possible to extract person name entit
 %%news articles related to the influential person can also be linked to a Wikipedia page entry to find out relevant details or 
 %to build influential people networks that can learn about entities involved in historical events. Such applications can immensely help historians working on prosopography\cite{allen2013toward} and scholars in learning events related to historically significant people interactively.
 
-\noindent \textbf{Paper Organization:} This paper is organized as follows: Section~\ref{influential:rw} discusses related work; the machine learning framework is discussed in Section~\ref{chp:framework}; the characteristics of the data used for this research are presented in Section~\ref{data}. Sections~\ref{chapter:people gazetteer} and ~\ref{influential} present the development of the gazetteer and the influential people detection process; empirical results and discussions are presented in Section~\ref{influential:results} and ~\ref{influential:discussion} and Section~\ref{conc} concludes the paper.
+\noindent \textbf{Paper Organization:} This paper is organized as follows: Section~\ref{repsys} presents the definition, prior work and design principles for building reputation systems; the reputation system for person name entities is discussed in Section~\ref{pnRep}; empirical results on two datasets -- a historical newspaper archive and Washington Post data are presented in Section~\ref{emp};  Section~\ref{related} discusses related work; and Section~\ref{conc} concludes the paper.
 
-\section{Who is a reputed person?}
-[REDO THIS SECTION]
-In the context of machine learning, influential people detection has been mostly done in the field of social networks, marketing and diffusion research.
+\section{Reputation Systems: Definition, Prior Work and Design Principles}
+\label{repsys}
+
+\noindent The Oxford American dictionary defines reputation as beliefs or opinions held about individuals, organizations or things. Often, reputation is role fulfillment (\cite{Carter_02}). It is ascribed by society to an individual and is deemed personal. The opinion held by society about the individual is based on the way his/her identity has been managed and presented to society. Mathematically, reputation is defined as a personalized function of claims, transactions and opinions (\cite{Windley_07a}) i.e.
+\begin{equation}
+R_p = f(C_p, T_p, O_p)
+\end{equation}
+where $R_p$ indicates the reputation of a person, $C_p$ is the vector of claims about person $p$, $T_p$ is the vector of transactions and $O_p$ is the associated opinions about $p$. In general, claims are facts about a person that can be verified, opinions are indirect information from other sources while transactions are records of interactions between entities.
+Positive reputation is associated with increase in confidence, trust, social status and power. People with positive reputation are sought out by society -- therefore, it is often imperative that a person will try to maximize his/her positive reputation through identity management.
+
+Computational models of reputation (often called reputation systems in literature) are fairly recent (\cite{Sabater_05,Resnick_02}). Resnick et al. (\cite{Resnick_02}) define a reputation system as a system that ``collects, distributes, and aggregates feedback about participants' past behavior". They have been studied in various disciplines including philosophy (\cite{Hume_75}), sociology (\cite{Wasserman_94}), economics (\cite{Milgrom_82}), computer science (\cite{Kamvar_03a}), marketing and social networks (\cite{Dellarocas_03}). They can be analyzed from different perspectives and can be used in a wide range of situations. This often makes them hard to classify. Sabater and Sierra  (\cite{Sabater_05}) provide a conceptual model of reference for reputation systems according to which, reputation systems can be broadly classified into (a) Cognitive models, in which reputation is made up of underlying beliefs and is assumed to be a function of those beliefs and (b) Game theoretic models, in which subjective probabilities are used to characterize the expectation of an individual $A$ who depends on individual $B$ to perform an action on which $A$'s welfare depends. We claim that our system to identify reputed people from large text corpuses is a cognitive model as the reputation of a person is inherently linked to the beliefs that other people have about him/her in the pre-specified time interval. 
+
+\noindent \textbf{Prior Work: } Many online marketplaces including eBay (\cite{eBay_02}), Amazon Auctions (\cite{AA}) and OnSale Exchange (\cite{OnSale}) use reputation systems extensively. For example, items on eBay are sold by English auctions and users provide ratings (positive, negative or neutral) of sellers -- these ratings collected over a pre-determined time frame, are used to design reputation systems. Google's  search results (\cite{Brin_98a}) are ranked by how many sites contain links that point to them -- while no explicit reputationprofiles are published, the rank ordering acts as an implicit indicator of reputation; Epinions allows users to write reviews about products and services and other members rate the usefulness of these reviews -- the average ratings over the past six months acts as a measure of reputation; in Slashdot (\cite{Slashdot}), postings are prioritized or filtered according to the ratings they receive from readers. These systems are similar in spirit to the one designed here in that reputation is considered a ``global" property and a single value is used to characterize it. Online reputation systems, however, do not consider the context in which ratings were provided and are primarily user-driven and the objective of convincing users to complete transactions with strangers is satisfied in most cases. Our framework for identifying reputed people is content-driven and explicitly uses the context in which an interaction occurs for the task of ranking reputed people; in addition, the current design does not have the possibility of incorporating feedback from other people in the system. 
+
+In social networks, marketing and diffusion research the problem of influential node detection has been studied.
 Kempe et. al \cite{kempe2003maximizing} present work on choosing the most influential set of nodes in a social network in order to maximize user influence in the network. 
 %They consider spread of influence from an influential node cascading through a network which further influences other neighborhood nodes. In this research, we do not focus on the network formed by person entities.
-Lerman et. al \cite{lerman2010using} define popularity of a news story in terms of number of reader votes received by it. Popularity over time is based on voting history and the probability that a user in a list will vote. To identify influential bloggers, Agarwal et. al\cite{agarwal2008identifying} quantify influence of each blogger by taking the maximum of the influence scores of each blog posted by the blogger. The influence score is calculated using the number of posts that refer to the blog, number of comments on the blog, number of other posts that the blog refers to and length of the blog. Influential blogger categories are also created based on the temporal patterns of blog posting. Cha et. al\cite{cha2010measuring} describe another set of measures for detection of top influential users on Twitter using number of retweets, mentions and followers for an individual. They perform ranking based on each measure separately and use Spearman's rank correlation coefficient to find correlation among ranks and effect of each measure contributing to a person's influence. The influence ranks of topmost influential users on Twitter are presented across various topics as well as time. In all of the above, the goal is to measure influence or popularity -- however, these cannot be directly adapted to the gazetteer or newspaper articles. 
-\section{Related Work}
+Lerman et. al \cite{lerman2010using} define popularity of a news story in terms of number of reader votes received by it. Popularity over time is based on voting history and the probability that a user in a list will vote. To identify influential bloggers, Agarwal et. al\cite{agarwal2008identifying} quantify influence of each blogger by taking the maximum of the influence scores of each blog posted by the blogger. The influence score is calculated using the number of posts that refer to the blog, number of comments on the blog, number of other posts that the blog refers to and length of the blog. Influential blogger categories are also created based on the temporal patterns of blog posting. Cha et. al\cite{cha2010measuring} describe another set of measures for detection of top influential users on Twitter using number of retweets, mentions and followers for an individual. They perform ranking based on each measure separately and use Spearman's rank correlation coefficient to find correlation among ranks and effect of each measure contributing to a person's influence. The influence ranks of topmost influential users on Twitter are presented across various topics as well as time. In all of the above, the goal is to measure influence or popularity -- however, these cannot be directly adapted to the gazetteer or newspaper articles (ELABORATE A BIT MORE). 
 
-\input{repNames.tex}
+The reputation system designed for ranking person names extracted from a corpus of historical newspaper articles presented here, relies exclusively on the content of the articles. Several content-driven reputation systems have been built to study the reputation of Wikipedia authors. Adler et al. (\cite{Adler_07a})present a system wherein authors gain reputation when the edits they perform to Wikipedia articles are preserved by subsequent authors and they lose reputation when their changes are rolled back. The author reputation is computed based on content evolution and user ratings are not taken into consideration. Zeng et al. (\cite{, Zeng_06}) use dynamic Bayesian networks to model the evolution of trust over different versions of Wikipedia articles -- the input to their network are prior models of trust and amount of added and deleted text. A more complex system, resistant to Sybil attacks (inwhich multiple identities, controlled by the same person, perform coordinated actions to increase reputation), which prevents a set of identities from increasing reputation without doing useful work has been presented in (\cite{Chatterjee_08}). These systems are either (a) chronological -- where the reputation is computed fromthe chronological sequence of ratings a user receives or (b) fixed-point -- where reputation is computed using a fixed-point calculation over a graph of feedbacks. Such a chronological sequence of ratings or a graph of feedbacks is non-existent in our data set. While we rely exclusively on content of the articles for the design of our reputation system, the dependence on ratings or pre-constructed graphs is not there. Consequently, we adapt several design principles that are typically used to build the framework of reputation systems ( \cite{Kamvar_03a}) from literature which is presented next.
 
-\input{relatedRanking.tex}
+\noindent \textbf{Design Principles:} The following principles are often used to design content-driven reputation systems. Reputation is: 
 
+\begin{enumerate}
+\item Personal: Since reputation is the estimation held by society about an individual, based on the objective behavior of the individual, it is often deemed as personal. This leads to the conclusion that reputation systems ought to be personalized. %Thus for every person name extracted from our corpus, we find features that relate to this person and help 
 
-\section{Knowledge Discovery Process for Unsupervised Ranking of Person Name Entities}
+\item Currency: Positive reputation has been used often to gain confidence, trust and power in society. It has also been used to gain economic value (\cite{Resnick_06a}). 
 
-\subsection{People Gazetteer}
-People Gazetteer as defined in Section~\ref{sec:introduction} consists of tuples of person names along with list of documents in which they occur. The primary goal of developing the gazetteer is to have an organized list of person names from which influential people can be identified.
-%It is developed as an organized structure that can facilitate the process of detection of influential persons from the dataset in an efficient and easy way. 
-This section describes the two-step process involved in the construction of the People Gazetteer:
-a) Extraction of person names from the news articles using Named Entity Recognition (described further in Section~\ref{ner}) and
-b) Assignment of topics to news articles using a Latent Dirichlet Allocation (LDA)-based topic detector (described further in  Section~\ref{topic detection}). The following modifications are made on the output of the Stanford CRF-NER -- if the software recognizes single term person entities, we ignore those and consider only multi-term person entities and if a person entity's name is repeated multiple times, then we consider it only once. For example, if the person names ``John", ``John Smith", ``Smith" are recognized during PNER process, then we only consider ``John Smith" as as a potential person entity for our People Gazetteer.  
-A total of 36364 person entities are extracted from our corpus of 14020 news articles.  
+\item Dynamic: It varies with time and most computational systems assume that it remains uniform across time.
 
-%Output of People gazetteer developed using these steps is presented in Section ~\ref{gaz:result}.
+\item Based on past interactions: A person builds his/her reputation in society based on past interactions, character, abilities and disposition. Reputation systems collect and record feedback on past interactions through claims and transactions.
 
-\subsection{Person Named Entity Recognition (PNER)}
-\label{ner}
+\item Based on opinion: It is based on belief's about an individual -- these beliefs are expressed in a variety of ways depending on the context. The beliefs are often subjective and can be conceptualized as ratings, endorsements, and other forms of judgement. Often the veracity of these beliefs cannot be verified. Furthermore, an inherent bias is introduced by the fact that most people tend to avoid negative feedback, resorting to negotiation and arbitration. Reputation systems that use subjective beliefs and opinions are therefore costly to design and build. 
 
-%\subsubsection{Definition}
-\noindent Named Entity Recognition (NER) refers to classification of elements in text into pre-defined categories such as the names of persons, organizations, locations, expressions of times, quantities, monetary values, and percentages. 
-%It can also be considered as a sequence labeling problem that predicts label of each element of the text  based on the adjacent element labels.
-Person Named Entity Recognition (PNER) is Named Entity Recognition that marks up only person names occurring in the text. It involves \emph{chunking} or segmentation of  the text for name detection followed by \emph{classification} of the name by entity type ( for e.g. person, organization, and location).
+\item Based on context: Sabater et al. (\cite{Sabater_05}) introduce the notion of ``visibility" of reputation -- it can be either global or subjective. Global reputation is a single value calculated from all the transactional data available to the system. Subjective reputation is calculated for pairs of individuals based on their interactions and the opinions of others.
 
-%PNER is required in this research so as to extract all person name entities occurring in the complete dataset and then identify influential person entities among them through development of the People Gazetteer. 
-%PNER aids in the development of People Gazetteer by first extracting a list of all person names occurring in the dataset followed by creation of a Person-Article list where each person is linked with the articles in which he/she occurs.
+\end{enumerate}
 
-In this work, the Stanford CRF-NER\footnote{http://nlp.stanford.edu/software/CRF-NER.shtml} is used for Person Named Entity Recognition. It identifies three classes -- Person, Organization and Location and is based on linear chain Conditional Random Field (CRF)(\cite{mccallum2003early, finkel2005incorporating, sutton2011introduction}) sequence models. 
+\begin{figure}[!h]
+\centering
+%\begin{center}
+\includegraphics[width=0.75\textwidth]{arch.jpg}
+\caption{Reputation System for Person Name Entities}
+\label{arch}
+%\end{center}
+\end{figure}
 
-\subsection{Feature Engineering} 
-\label{feat}
-To find \emph{reputed} people from the text in news articles, we extract several features corresponding to each person entity in the gazetteer. These are:
+\section{Reputation System for Person Name Entities}
+\label{pnRep}
 
-%\begin{enumerate}
-%\item 
-\noindent \textbf{Normalized Document Length (NDL): } 
-Document Length is defined as the number of tokens contained in a news article. It is further normalized by dividing with the maximum length of any news article across the corpus. Thus,  
+The principles discussed above enable us to design a reputation system for person name entities. The framework is depicted in Figure~\ref{arch}. It comprises of the following components: 
+
+\begin{itemize}
+\item Document Ingestion Layer: This layer is responsible for maintaining the document corpus, including keeping track of the time window during which they are generated. Our system is shown to work with two document corpora -- a subset of articles obtained from the historical archive of ``The Sun" newspaper from Nov. 1894 and a more recent ``Washington Post" corpus. 
+
+\item People Gazetteer: It consists of tuples comprising of person names along with the list of documents in which they occur. To build the gazetteer, a Named Entity Recognizer (NER\footnote{The Stanford CRF-NER\footnote{http://nlp.stanford.edu/software/CRF-NER.shtml} (\cite{mccallum2003early, finkel2005incorporating, sutton2011introduction})  is used for Person Named Entity Recognition. }) is run on every document in the corpus to mark up people names occurring in the text. This process involves \emph{chunking} or segmentation of the text, followed by classification of the name by entity type (for e.g. person, organization, and location). Only multi-term entities of type ``person" are retained. Repetitions of entity names are not allowed -- for example, if the person names ``John", ``John Smith", ``Smith" are recognized, we only consider ``John Smith" as an entry for the gazetteer. For the historical newspaper archive, a total of 36364 person entities are extracted from 14020 news articles. [ENTRY DETAILS ABOUT WASHINGTON POST]
+Once the gazetteer is built, features are extracted and reputed people need to be identified.
+
+\item Feature Extractor: We extract several features corresponding to each person in the gazetteer. These are:
+
+\begin{enumerate}
+\item \textbf{Normalized Document Length (NDL): } Document Length is defined as the number of tokens contained in a news article. It is further normalized by dividing with the maximum length of any news article across the corpus. Thus,  
 $NDL= \frac{\text{Document Length}} {\text{Maximum Document Length in the dataset}}$
 
 %\item[$\bullet$IDF]
 %IDF is used as a parameter in the calculation of DI of a news article to give weight to the person entity's occurrence in the complete %dataset. It can be calculated as the number of news articles in which a person entity occurs in the complete dataset. It is %equivalent to the length of document list in the people gazetteer for each person entity.
 
 %\item
-\noindent \textbf{ Normalized Person Name Frequency (NPNF): }
+\item \textbf{ Normalized Person Name Frequency (NPNF): }
 Person Name Frequency (PNF) accounts for the number of occurrences of a person's name in the news article. A high value of PNF makes the document more important. It is normalized as follows:
 
 \begin{center}
 $NPNF=	1+\log$(PNF)
 \end{center}
 
-\noindent \textbf{Number of similar articles (NSIM): }
-This parameter is used in the calculation of the DI by finding articles belonging to the same topic. 
+\item \textbf{Number of similar articles (NSIM): }
+%This parameter is used in the calculation of the DI by finding articles belonging to the same topic. 
 %The set of topics derived from a corpus can be used to answer questions about the similarity of words and 
 %documents.
-For a document $d$ whose DI is to be calculated, let  SIM= Number of articles with the same topic as $d$ in the document list of a person.
+For a document $d$, let  SIM= Number of articles with the same topic as $d$ in the document list of a person.
 This measure is normalized by the total number of articles in the document list of the person. Formally,
 
 %\begin{center}
@@ -138,19 +158,19 @@ NSIM is equivalent to the proportion of topic similar articles that document $d$
 %This parameter takes into account the effect of a document's score on a person's IPI when there exist several other documents of the same topic in the person's list. 
 %\end{enumerate}
 
-\noindent \textbf{Signature Features: } %% Jayashree Please Update This Section
+\item \textbf{Signature Features: } %% Jayashree Please Update This Section
 
 
-\noindent \textbf{Contextual Features: } The entire text in the document is used to extract features. Word2Vec representation \cite{Mikolov_13a, Mikolov_13b} of the text is obtained using the deeplearning4j framework (\url{https://deeplearning4j.org/word2vec}) -- the input to the word2vec two layer neural net is the text in the document and the output is a 100 dimensional representation of words; these vectors, called \emph{neural word embeddings}, are obtained using a continuous bag of word representation (CBOW). 
+\item \textbf{Contextual Features: } The entire text in the document is used to extract features. Word2Vec representation (\cite{Mikolov_13a, Mikolov_13b}) of the text is obtained using the deeplearning4j framework (\url{https://deeplearning4j.org/word2vec}) -- the input to the word2vec two layer neural net is the text in the document and the output is a 100 dimensional representation of words; these vectors, called \emph{neural word embeddings}, are obtained using a continuous bag of word representation (CBOW). 
+
+\end{enumerate}
+The above features are used in our unsupervised ranking models.
 
 
-\subsection{Human Annotation}
-Each 
-
-\subsection{Ranking Models}
+\item{Ranking Models: }
 The objective is to rank the set of all person names in the corpus based on reputation. Towards this end, a set of features denoted by $f_1,f_2, \cdots, f_n$ is extracted which provides the basis for ranking. Two different unsupervised ranking models are used in this work. These are described below:
-\begin{itemize}
-\item \textbf{Kernel Density Estimation (KDE) based Ranking: } In this method, we assume that the most reputed person can be found by looking for peaks in a simple probabilistic model of the documents. The probability of a person being reputed is modeled as $P(P_j = reputed) = P(f_1,f_2 \cdots, f_n)$. We learn the probabilities of our model by estimating the non-parametric densities \cite{scott_multivariate_2015, Silverman86} of all features we measure from the corpus (described in Section~\ref{feat}). Specifically, let $X \subseteq R^n$ be the domain of interest with $n$-features and $f: X \rightarrow R_{\ge 0}$ be an unknown probability density function. Let $D \subseteq X$ be a set of samples drawn from $f$. For any $x \in X$ we estimate $f(x)$ by using the function:
+\begin{enumerate}
+\item \textbf{Kernel Density Estimation (KDE) based Ranking: } In this method, we assume that the most reputed person can be found by looking for peaks in a simple probabilistic model of the documents. The probability of a person being reputed is modeled as $P(P_j = reputed) = P(f_1,f_2 \cdots, f_n)$. We learn the probabilities of our model by estimating the non-parametric densities (\cite{scott_multivariate_2015, Silverman86}) of all features learnt from the corpus. Specifically, let $X \subseteq R^n$ be the domain of interest with $n$-features and $f: X \rightarrow R_{\ge 0}$ be an unknown probability density function. Let $D \subseteq X$ be a set of samples drawn from $f$. For any $x \in X$ we estimate $f(x)$ by using the function:
 \begin{equation}
 \label{eqn1}
 \hat{f}_D(x) = \frac{1}{|D|} \sum_{s \in D} \prod_{i=1}^{n} \frac{1}{h_i} K(\frac{x_i - s_i}{h_i})
@@ -164,11 +184,16 @@ where $ \hat{\sigma_i}$ is the sample standard deviation computed from the $i^{t
 
 Finally, the rank of a person based on reputation, is inversely proportional to the probability of being reputed computed using the KDE based ranking.  
  \item \textbf{Borda Ranking: } 
-\end{itemize}
-\subsection{Evaluation of Models}
+\end{enumerate}
 
+\item {Human Annotation: }
+
+\item{Evaluation of Models}
+
+\end{itemize}
 
 \subsection{Data Description}
+\label{data}
 Two data sets are used to provide empirical validation of the claim that unsupervised ranking schemes can be used for finding reputed people. These are as follows:
 
 \begin{enumerate}
@@ -188,10 +213,18 @@ amount of garbled text. Article level segmentation of text is available for only
 
 
 \section{Empirical Results}
+\label{emp}
 
 \section{Discussions}
 
+\section{Related Work}
+\label{related}
+\input{repNames.tex}
+
+\input{relatedRanking.tex}
+
 \section{Conclusion}
+\label{conc}
 
 \section{Acknowledgements}
 The authors would like to thank Arpit Rana with help with annotations.
@@ -215,6 +248,7 @@ The authors would like to thank Arpit Rana with help with annotations.
 
 
 \bibliography{jasist}
+%\printbibliography
 
 \end{document}
 
