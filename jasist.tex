@@ -4,8 +4,10 @@
 \usepackage[english]{babel}
 \usepackage[utf8x]{inputenc}
 \usepackage{amsmath}
+\usepackage{float}
+\restylefloat{figure}
 \usepackage{graphicx}
-%\usepackage{float}
+%\usepackage[section]{placeins}
 
 \usepackage[colorinlistoftodos]{todonotes}
 %Unsupervised ranking of person name entities based on reputation.
@@ -81,14 +83,20 @@ Positive reputation is associated with increase in confidence, trust, social sta
 
 Computational models of reputation (often called reputation systems in literature) are fairly recent (\cite{Sabater_05,Resnick_02}). Resnick et al. (\cite{Resnick_02}) define a reputation system as a system that ``collects, distributes, and aggregates feedback about participants' past behavior". They have been studied in various disciplines including philosophy (\cite{Hume_75}), sociology (\cite{Wasserman_94}), economics (\cite{Milgrom_82}), computer science (\cite{Kamvar_03a}), marketing and social networks (\cite{Dellarocas_03}). They can be analyzed from different perspectives and can be used in a wide range of situations. This often makes them hard to classify. Sabater and Sierra  (\cite{Sabater_05}) provide a conceptual model of reference for reputation systems according to which, reputation systems can be broadly classified into (a) Cognitive models, in which reputation is made up of underlying beliefs and is assumed to be a function of those beliefs and (b) Game theoretic models, in which subjective probabilities are used to characterize the expectation of an individual $A$ who depends on individual $B$ to perform an action on which $A$'s welfare depends. We claim that our system to identify reputed people from large text corpuses is a cognitive model as the reputation of a person is inherently linked to the beliefs that other people have about him/her in the pre-specified time interval. 
 
-\noindent \textbf{Prior Work: } Many online marketplaces including eBay (\cite{eBay_02}), Amazon Auctions (\cite{AA}) and OnSale Exchange (\cite{OnSale}) use reputation systems extensively. For example, items on eBay are sold by English auctions and users provide ratings (positive, negative or neutral) of sellers -- these ratings collected over a pre-determined time frame, are used to design reputation systems. Google's  search results (\cite{Brin_98a}) are ranked by how many sites contain links that point to them -- while no explicit reputationprofiles are published, the rank ordering acts as an implicit indicator of reputation; Epinions allows users to write reviews about products and services and other members rate the usefulness of these reviews -- the average ratings over the past six months acts as a measure of reputation; in Slashdot (\cite{Slashdot}), postings are prioritized or filtered according to the ratings they receive from readers. These systems are similar in spirit to the one designed here in that reputation is considered a ``global" property and a single value is used to characterize it. Online reputation systems, however, do not consider the context in which ratings were provided and are primarily user-driven and the objective of convincing users to complete transactions with strangers is satisfied in most cases. Our framework for identifying reputed people is content-driven and explicitly uses the context in which an interaction occurs for the task of ranking reputed people; in addition, the current design does not have the possibility of incorporating feedback from other people in the system. 
+\noindent \textbf{Prior Work: } Many online marketplaces including eBay (\cite{eBay_02}), Amazon Auctions (\cite{AA}) and OnSale Exchange (\cite{OnSale}) use reputation systems extensively. For example, items on eBay are sold by English auctions and users provide ratings (positive, negative or neutral) of sellers -- these ratings collected over a pre-determined time frame, are used to design reputation systems. Google's  search results (\cite{Brin_98a}) are ranked by how many sites contain links that point to them -- while no explicit reputation
+profiles are published, the rank ordering acts as an implicit indicator of reputation; Epinions allows users to write reviews about products and services and other members rate the usefulness of these reviews -- the average ratings over the past six months acts as a measure of reputation; in Slashdot (\cite{Slashdot}), postings are prioritized or filtered according to the ratings they receive from readers. These systems are similar in spirit to the one designed here in that reputation is considered a ``global" property and a single value is used to characterize it. Online reputation systems, however, do not consider the context in which ratings were provided and are primarily user-driven and the objective of convincing users to complete transactions with strangers is satisfied in most cases. Our framework for identifying reputed people is content-driven and explicitly uses the context in which an interaction occurs for the task of ranking reputed people; in addition, the current design does not have the possibility of incorporating feedback from other people in the system. 
 
 In social networks, marketing and diffusion research the problem of influential node detection has been studied.
 Kempe et. al \cite{kempe2003maximizing} present work on choosing the most influential set of nodes in a social network in order to maximize user influence in the network. 
 %They consider spread of influence from an influential node cascading through a network which further influences other neighborhood nodes. In this research, we do not focus on the network formed by person entities.
 Lerman et. al \cite{lerman2010using} define popularity of a news story in terms of number of reader votes received by it. Popularity over time is based on voting history and the probability that a user in a list will vote. To identify influential bloggers, Agarwal et. al\cite{agarwal2008identifying} quantify influence of each blogger by taking the maximum of the influence scores of each blog posted by the blogger. The influence score is calculated using the number of posts that refer to the blog, number of comments on the blog, number of other posts that the blog refers to and length of the blog. Influential blogger categories are also created based on the temporal patterns of blog posting. Cha et. al\cite{cha2010measuring} describe another set of measures for detection of top influential users on Twitter using number of retweets, mentions and followers for an individual. They perform ranking based on each measure separately and use Spearman's rank correlation coefficient to find correlation among ranks and effect of each measure contributing to a person's influence. The influence ranks of topmost influential users on Twitter are presented across various topics as well as time. In all of the above, the goal is to measure influence or popularity -- however, these cannot be directly adapted to the gazetteer or newspaper articles (ELABORATE A BIT MORE). 
 
-The reputation system designed for ranking person names extracted from a corpus of historical newspaper articles presented here, relies exclusively on the content of the articles. Several content-driven reputation systems have been built to study the reputation of Wikipedia authors. Adler et al. (\cite{Adler_07a})present a system wherein authors gain reputation when the edits they perform to Wikipedia articles are preserved by subsequent authors and they lose reputation when their changes are rolled back. The author reputation is computed based on content evolution and user ratings are not taken into consideration. Zeng et al. (\cite{, Zeng_06}) use dynamic Bayesian networks to model the evolution of trust over different versions of Wikipedia articles -- the input to their network are prior models of trust and amount of added and deleted text. A more complex system, resistant to Sybil attacks (inwhich multiple identities, controlled by the same person, perform coordinated actions to increase reputation), which prevents a set of identities from increasing reputation without doing useful work has been presented in (\cite{Chatterjee_08}). These systems are either (a) chronological -- where the reputation is computed fromthe chronological sequence of ratings a user receives or (b) fixed-point -- where reputation is computed using a fixed-point calculation over a graph of feedbacks. Such a chronological sequence of ratings or a graph of feedbacks is non-existent in our data set. While we rely exclusively on content of the articles for the design of our reputation system, the dependence on ratings or pre-constructed graphs is not there. Consequently, we adapt several design principles that are typically used to build the framework of reputation systems ( \cite{Kamvar_03a}) from literature which is presented next.
+%\FloatBarrier
+
+The reputation system designed for ranking person names extracted from a corpus of historical newspaper articles presented here, relies exclusively on the content of the articles. Several content-driven reputation systems have been built to study the reputation of Wikipedia authors. Adler et al. (\cite{Adler_07a})present a system wherein authors gain reputation when the edits they perform to Wikipedia articles are preserved by subsequent authors and they lose reputation when their changes are rolled back. The author reputation is computed based on content evolution and user ratings are not taken into consideration. Zeng et al. (\cite{, Zeng_06}) use dynamic Bayesian networks to model the evolution of trust over different versions of Wikipedia articles -- the input to their network are prior models of trust and amount of added and deleted text. A more complex system, resistant to Sybil attacks (in
+which multiple identities, controlled by the same person, perform coordinated actions to increase reputation), which prevents a set of identities from increasing reputation without doing useful work has been presented in (\cite{Chatterjee_08}). These systems are either (a) chronological -- where the reputation is computed from
+the chronological sequence of ratings a user receives or (b) fixed-point -- where reputation is computed using a fixed-point calculation over a graph of feedbacks. Such a chronological sequence of ratings or a graph of feedbacks is non-existent in our data set. While we rely exclusively on content of the articles for the design of our reputation system, the dependence on ratings or pre-constructed graphs is not there. Consequently, we adapt several design principles that are typically used to build the framework of reputation systems ( \cite{Kamvar_03a}) from literature which is presented next.
+
 
 \noindent \textbf{Design Principles:} The following principles are often used to design content-driven reputation systems. Reputation is: 
 
@@ -107,27 +115,30 @@ The reputation system designed for ranking person names extracted from a corpus 
 
 \end{enumerate}
 
-\begin{figure}[!h]
-\centering
-%\begin{center}
-\includegraphics[width=0.75\textwidth]{arch.jpg}
-\caption{Reputation System for Person Name Entities}
-\label{arch}
-%\end{center}
-\end{figure}
+
 
 \section{Reputation System for Person Name Entities}
 \label{pnRep}
 
 The principles discussed above enable us to design a reputation system for person name entities. The framework is depicted in Figure~\ref{arch}. It comprises of the following components: 
+\begin{figure}[H]
+\begin{center}
+   \includegraphics[width=0.38\textheight]{arch.jpg}
+    \caption{Reputation System for Person Name Entities}
+    \label{arch}
+\end{center}   
+\end{figure}
 
-\begin{itemize}
-\item Document Ingestion Layer: This layer is responsible for maintaining the document corpus, including keeping track of the time window during which they are generated. Our system is shown to work with two document corpora -- a subset of articles obtained from the historical archive of ``The Sun" newspaper from Nov. 1894 and a more recent ``Washington Post" corpus. 
 
-\item People Gazetteer: It consists of tuples comprising of person names along with the list of documents in which they occur. To build the gazetteer, a Named Entity Recognizer (NER\footnote{The Stanford CRF-NER\footnote{http://nlp.stanford.edu/software/CRF-NER.shtml} (\cite{mccallum2003early, finkel2005incorporating, sutton2011introduction})  is used for Person Named Entity Recognition. }) is run on every document in the corpus to mark up people names occurring in the text. This process involves \emph{chunking} or segmentation of the text, followed by classification of the name by entity type (for e.g. person, organization, and location). Only multi-term entities of type ``person" are retained. Repetitions of entity names are not allowed -- for example, if the person names ``John", ``John Smith", ``Smith" are recognized, we only consider ``John Smith" as an entry for the gazetteer. For the historical newspaper archive, a total of 36364 person entities are extracted from 14020 news articles. [ENTRY DETAILS ABOUT WASHINGTON POST]
+\subsection{Document Ingestion Layer}
+%\begin{itemize}
+%\item Document Ingestion Layer: 
+This layer is responsible for maintaining the document corpus, including keeping track of the time window during which they are generated. Our system is shown to work with two document corpora -- a subset of articles obtained from the historical archive of ``The Sun" newspaper from Nov. 1894 and a more recent ``Washington Post" corpus. 
+
+\subsection{People Gazetteer} It consists of tuples comprising of person names along with the list of documents in which they occur. To build the gazetteer, a Named Entity Recognizer (NER\footnote{The Stanford CRF-NER\footnote{http://nlp.stanford.edu/software/CRF-NER.shtml} (\cite{mccallum2003early, finkel2005incorporating, sutton2011introduction})  is used for Person Named Entity Recognition. }) is run on every document in the corpus to mark up people names occurring in the text. This process involves \emph{chunking} or segmentation of the text, followed by classification of the name by entity type (for e.g. person, organization, and location). Only multi-term entities of type ``person" are retained. Repetitions of entity names are not allowed -- for example, if the person names ``John", ``John Smith", ``Smith" are recognized, we only consider ``John Smith" as an entry for the gazetteer. For the historical newspaper archive, a total of 36364 person entities are extracted from 14020 news articles. [ENTRY DETAILS ABOUT WASHINGTON POST]
 Once the gazetteer is built, features are extracted and reputed people need to be identified.
 
-\item Feature Extractor: We extract several features corresponding to each person in the gazetteer. These are:
+\subsection{Feature Extractor} We extract several features corresponding to each person in the gazetteer. These are:
 
 \begin{enumerate}
 \item \textbf{Normalized Document Length (NDL): } Document Length is defined as the number of tokens contained in a news article. It is further normalized by dividing with the maximum length of any news article across the corpus. Thus,  
@@ -158,8 +169,7 @@ NSIM is equivalent to the proportion of topic similar articles that document $d$
 %This parameter takes into account the effect of a document's score on a person's IPI when there exist several other documents of the same topic in the person's list. 
 %\end{enumerate}
 
-\item \textbf{Signature Features: } %% Jayashree Please Update This Section
-
+\item \textbf{Signature Features: } For every person name identified, we examine the words before it to identify occurrences of specific titles. Titles are assumed to signify veneration, official position and academic  or professional qualifications. We use this as an indicator of whether a person is reputed or not. Specifically, we use the categorization of titles from the Wikipedia\footnote{https://en.wikipedia.org/wiki/Title} page but only restrict it to the following categories: legislative and executive, aristocratic (both genders are considered), judicial, ecclesiastical, academic, military, and ranks of other organizations. For each category, we examine the occurrence of the title before the person name -- the feature value is set to 1 if it does occur and 0 otherwise.
 
 \item \textbf{Contextual Features: } The entire text in the document is used to extract features. Word2Vec representation (\cite{Mikolov_13a, Mikolov_13b}) of the text is obtained using the deeplearning4j framework (\url{https://deeplearning4j.org/word2vec}) -- the input to the word2vec two layer neural net is the text in the document and the output is a 100 dimensional representation of words; these vectors, called \emph{neural word embeddings}, are obtained using a continuous bag of word representation (CBOW). 
 
@@ -167,7 +177,7 @@ NSIM is equivalent to the proportion of topic similar articles that document $d$
 The above features are used in our unsupervised ranking models.
 
 
-\item{Ranking Models: }
+\subsection{Ranking Models }
 The objective is to rank the set of all person names in the corpus based on reputation. Towards this end, a set of features denoted by $f_1,f_2, \cdots, f_n$ is extracted which provides the basis for ranking. Two different unsupervised ranking models are used in this work. These are described below:
 \begin{enumerate}
 \item \textbf{Kernel Density Estimation (KDE) based Ranking: } In this method, we assume that the most reputed person can be found by looking for peaks in a simple probabilistic model of the documents. The probability of a person being reputed is modeled as $P(P_j = reputed) = P(f_1,f_2 \cdots, f_n)$. We learn the probabilities of our model by estimating the non-parametric densities (\cite{scott_multivariate_2015, Silverman86}) of all features learnt from the corpus. Specifically, let $X \subseteq R^n$ be the domain of interest with $n$-features and $f: X \rightarrow R_{\ge 0}$ be an unknown probability density function. Let $D \subseteq X$ be a set of samples drawn from $f$. For any $x \in X$ we estimate $f(x)$ by using the function:
@@ -183,16 +193,27 @@ h_i = (\frac{4}{|D| (n+2)})^{\frac{1}{n+4} \hat{\sigma_i}}
 where $ \hat{\sigma_i}$ is the sample standard deviation computed from the $i^{th}$ column of $|D|$.
 
 Finally, the rank of a person based on reputation, is inversely proportional to the probability of being reputed computed using the KDE based ranking.  
- \item \textbf{Borda Ranking: } 
+
+ \item \textbf{Borda Ranking: } The Borda (\cite{Borda_81}) method is a rank aggregation scheme used commonly in literature (\cite{Dwork_01}). Given a set of rankings $f_1, f_2, \cdots, f_m$ of the set of person names $X_1, X_2, \cdots, X_n$, the objective is to produce a single ranking $R$ that is in agreement with the existing rankings. Borda's method first assigns a score $B_i(c)=$ the number of candidates ranked below $c$ in $f_i$ and then the total Borda score $B(c)$ is defined as $\sum_{i=1}^{m} B_i(c)$. Ties are resolved by averaging the rank over the person names having same score. Next, ranks across $f_1, f_2, \cdots, f_m$ are averaged to calculate the aggregated rank for each person. This average rank is sorted in descending order to obtain the final ranked list of person names.
+ 
 \end{enumerate}
 
-\item {Human Annotation: }
+%\item {Human Annotation: }
 
-\item{Evaluation of Models}
+\subsection{Evaluation of Models } We use the notion of a top-$K$ lists, ubiquitously used in the information retrieval community, for comparing ranked lists. Several metrics, such as precision and recall at various values of $K$, are used to assess the quality of the top-$K$ lists. These metrics, however, are computed by comparing them against a ``ground truth". The notion of ``ground truth" is hard to define in our application and even if it existed, it is likely to be very subjective. In addition, these metrics provide an absolute (unary) rating rather than a relative notion of distance. What is most relevant in our setting, therefore, is to be able to compare two top-$K$ lists for similarity/dissimilarity. We adapt two metrics (Spearman's footrule and Kendall Tau) for comparing top-$K$ lists proposed by Fagin et al. (\cite{Fagin_03}) and define them here for the sake of completeness.
 
-\end{itemize}
+A permutation $\sigma$ is a bijection from the set $D = D_{\sigma}$ (also called domain or universe) onto a set $[n] = \{1,2, \cdots, n\}$ where $[n]$ is the size of $|D|$. Let $S_{D}$ be the set of all permutations of $D$. For a given permutation $\sigma$, $\sigma(i)$ refers to the rank of element $i, i \le i \le n$. If $\sigma(i) < sigma(j)$, then $i$ is ranked ahead of $j$. Let $\mathcal{P}=\mathcal{P}_D = \{(i,j) | i, j \in D\}$ be the set of unordered pairs of objects in $D$ and $\sigma_1, \sigma_2 \in S_D$. 
 
-\subsection{Data Description}
+\noindent \textbf{Kendall Tau ($KT(\sigma_1, \sigma_2)$):} For each pair $(i,j) \in \mathcal{P}$, if $i, j$ are in the same order in $\sigma_1, \sigma_2$, then $K_{i,j} (\sigma_1, \sigma_2)=0$, else if $i, j$ are in reverse order i.e. $i$ is before $j$ in $\sigma_1$, but $j$ is before $i$ in $\sigma_2$, then $K_{i,j} (\sigma_1, \sigma_2)=1$. Thus, Kendall Tau = $KT(\sigma_1, \sigma_2)=\sum_{{i,j} \in \mathcal{P}} K_{i,j} (\sigma_1, \sigma_2)$.
+
+\noindent \textbf{Spearman's Footrule ($F(\sigma_1, \sigma_2)$): } This is given by the $L_1$ distance between two permutations i.e. $F(\sigma_1, \sigma_2) = \sum_{i=1}^n |\sigma_1(i) - \sigma_2(i)|$.
+
+The above two metrics traditionally used for comparing ranked lists are further adapted to work with top-$K$ lists. Given two top-$K$ lists $\tau_1$ and  $\tau_2$, we define $\mathcal{P}(\tau_1, \tau_2) = \mathcal{P}_{D_1 \cup D_2}$ to be the set of all unordered pairs of elements in $D_{\tau_1} \cup D_{\tau_2}$. For top-$K$ lists, the minimizing Kendall Tau metric between two top-$K$ lists $KT_{min}(\tau_1, \tau_2)= \text{min} K_{i,j} (\sigma_1, \sigma_2)$ where $\sigma_1, \sigma_2$ are permutations of $D_{\tau_1} \cup D_{\tau_2}$ and where $\sigma_1 \succeq \tau_1$ and $\sigma_2 \succeq \tau_2$.
+
+To estimate the Spearman's Footrule for top-$K$ lists ($F^{l}(\tau_1, \tau_2)$), we observe that there exists a real number $l$ greater than $K$. The Footrule with location parameter $l$ is obtained by placing all the missing elements in each of the lists at position $l$ and then estimating Footrule in the usual manner. Thus given top-$K$ lists, $\tau_1$ and $\tau_2$ we define $\hat{\tau_1}$ and  $\hat{\tau_2}$ with domain  $D_{\tau_1} \cup D_{\tau_2}$ i.e. $\hat{\tau_1} = \tau_i, \text{for } i \in D_{\tau_1} \text{and } \hat{\tau_1} = l$, otherwise. $\hat{\tau_2}$ is similarly defined. Then, $F^{l}(\tau_1, \tau_2)= \sum_{i \in D_{\tau_1} \cup D_{\tau_2}} | \hat{\tau_1} - \hat{\tau_2}|$.
+% \end{itemize} 
+
+\section{Data Description}
 \label{data}
 Two data sets are used to provide empirical validation of the claim that unsupervised ranking schemes can be used for finding reputed people. These are as follows:
 
@@ -215,7 +236,36 @@ amount of garbled text. Article level segmentation of text is available for only
 \section{Empirical Results}
 \label{emp}
 
-\section{Discussions}
+\subsection{Aims}
+The objective of the empirical study reported in this section is to test the effectiveness of using the unsupervised ranking algorithm based on Kernel Density Estimation in the reputation management system for person name entities. Towards this end, we would like to answer the following questions: (a) How does the proposed unsupervised ranking algorithm based on Kernel Density Estimation compare to rank aggregation schemes known in literature (for e.g. Borda score)? (b) What is the effect of varying parameters (for e.g. the number of points at which the density is estimated, the method of bandwidth selection) of the KDE algorithm on the top-$K$ ranked list?  
+
+\subsection{Results}
+\textbf{Comparison of KDE based ranking algorithm to Borda rank aggregation scheme:}
+The performance of the unsupervised ranking algorithm is presented on both the data sets described in Section~\ref{data}. Figure~\ref{KDEBorda-OCR} compares the performance of the Kernel Density Estimation technique with a rank aggregation scheme, Borda ranking on the Historical Newspaper Archive data. In both the cases the top-50 elements of the ranked lists are examined and the Kendall-Tau and Spearman's Footrule distance between them are reported. For the KDE technique, the number of data points at which the density is estimated is varied to be 50, 100, 250, 500 and 1000. The top-50 lists (KDE and Borda) are most similar when the Kernel Density is estimated at 100 sample points as reflected in both the Kendall-Tau and Spearman's Footrule measures.
+
+\begin{figure}[H]
+\begin{center}
+   \includegraphics[width=0.38\textheight]{KDEBorda.jpg}
+    \caption{Comparison of the unsupervised ranking algorithm based on Kernel Density Estimation to Borda rank aggregation scheme on the Historical Newspaper Archive data. The top-50 elements of the ranked list are compared using both the schemes. The x-axis plots the number of data points at which the density is estimated for the KDE based ranking scheme. The y-axis reports the Kendall-Tau or Spearman's Footrule distance between the ranked lists. }
+    \label{KDEBorda-OCR}
+\end{center}   
+\end{figure}
+
+\textbf{Study of the effect of varying parameters of the kernel density estimation scheme on ranking results:}
+
+\begin{figure}[H]
+\begin{center}
+   \includegraphics[width=0.38\textheight]{VaryingNoOfPtsKDE.jpg}
+    \caption{The effect of varying the number of points at which the density is estimated on the Historical Newspaper Archive dataset.}
+    \label{KDEVaryNoOfPts}
+\end{center}   
+\end{figure}
+
+
+Several parameters of the Kernel Density Estimation scheme are varied to test the effect on ranking performance. These are: (a) The number of points at which the density is estimated: Figure~\ref{KDEVaryNoOfPts} presents the results on the Historical Newspaper Archive data. Our results indicate that the ranked lists obtained when 50 and 100 data points are sampled are quite similar to one another. However, the lists are significantly different when 1000 or more points are sampled. 
+
+
+\subsection{Discussions}
 
 \section{Related Work}
 \label{related}
@@ -226,8 +276,10 @@ amount of garbled text. Article level segmentation of text is available for only
 \section{Conclusion}
 \label{conc}
 
+This paper presents a reputation system for person named entities using an unsupervised ranking scheme based on kernel density estimation. Person names are extracted from newspaper articles and are added to a people gazetteer. Several textual features that are likely to affect the reputation of a person such as the context in which s/he was discussed, the length of the articles, other similar articles in which they are discussed, and titles by which s/he was addressed are extracted. These features are used by an unsupervised kernel density based ranking algorithm to generate a top-$K$ list. The parameters of the kernel density based ranking algorithm are compared to other state-of-the-art rank aggregation schemes such as Borda aggregation. Furthermore, human annotators test the quality of our top-$k$ ranked list and verify that our system is able to learn the reputation of people names extracted from the archives. Our results on two data sets -- one historical and another a contemporary newspaper archive -- indicate that the kernel density based ranking algorithm is useful in designing reputation systems.
+
 \section{Acknowledgements}
-The authors would like to thank Arpit Rana with help with annotations.
+The authors would like to thank Arpit Rana for help with annotations.
 %\subsection{Comments}
 %
 %You can add inline TODO comments with the todonotes package, like this:
